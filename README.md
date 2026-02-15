@@ -5,7 +5,7 @@
   a través de una red privada virtual con WireGuard en topología hub-and-spoke. El objetivo principal es preparar un entorno técnico escalable
   para la futura implementación de un algoritmo distribuido desarrollado en Rust.
 
--Componentes principales:
+- Componentes principales:
   -Host (Hub): Nodo central que administra la VPN.
   -Workers (Spokes): Nodos que se conectan al Hub.
   -VPN WireGuard: Comunicación segura entre nodos.
