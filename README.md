@@ -30,13 +30,16 @@
  
 - Instrucciones para levantar la VPN (resumidas):
     -Instala WireGuard:
+  
       sudo apt update
       sudo apt install wireguard -y
   
     -Genera claves:
+  
       wg genkey | tee privatekey | wg pubkey > publickey
   
     -Configuración del Host:
+  
       [Interface]
       PrivateKey = CLAVE_PRIVADA_HOST
       Address = 10.0.0.1/24
@@ -55,6 +58,7 @@
       AllowedIPs = 10.0.0.4/32
 
     -Configuración del Worker:
+  
       [Interface]
       PrivateKey = CLAVE_PRIVADA_WORKER
       Address = 10.0.0.2/24
@@ -66,9 +70,11 @@
       PersistentKeepalive = 25
 
     -Activar la VPN:
+  
       sudo wg-quick up wg0
 
     -Verificamos que se haya activado:
+  
       sudo wg
   
 - Instrucciones para desplegar contenedores:
