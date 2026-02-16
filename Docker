@@ -1,1 +1,68 @@
-Docker
+1- Instalación de dependencias:
+  -Dependencias:
+    sudo apt install -y \
+    docker.io \
+    docker-compose \
+    rustc \
+    cargo \
+    build-essential
+
+  -Verificación de instalación:
+    docker --version
+    docker-compose --version
+    cargo --version
+
+2- Activar servicio Docker:
+    -Activar:
+      sudo systemctl enable --now docker
+
+3- Dar permisos al usuario:
+    -Permisos:
+      sudo usermod -aG docker $USER
+      newgrp docker
+
+    -Verificar:
+      docker ps
+
+4- Crear entorno de contenedores:
+    -Entorno y contenedores:
+      mkdir docker-workers
+      cd docker-workers
+
+5- Dockerfile:
+    -Crear Dockerfile:
+      nano Dockerfile
+
+    -Contenido:
+      FROM ubuntu:22.04
+      RUN apt update && apt install -y \
+          iputils-ping \
+          curl \
+          net-tools \
+          && rm -rf /var/lib/apt/lists/*
+      CMD ["sleep", "infinity"]
+
+6- docker-compose.yml:
+    -Crear docker-compose.yml:
+      nano docker-compose.yml
+          -Contenido:
+            version: "3.8"
+      
+      services:
+        worker:
+          build: .
+          deploy:
+            resources:
+              limits:
+                cpus: "0.50"
+                memory: 256M
+          restart: unless-stopped
+      
+7- Levantar 4 contenedores:
+    -Levantar contenedores:
+      docker-compose up -d --scale worker=4
+    -Verificar contenedores activos:
+      docker ps
+
+
+
