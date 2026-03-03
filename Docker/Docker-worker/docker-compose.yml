@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  worker-1:
+    build: .
+    command: /app/worker
+    environment:
+      - COORDINATOR_URL=http://10.0.0.1:3000
+    mem_limit: 128m
+    cpus: 0.25
+    restart: on-failure
+
+  worker-2:
+    build: .
+    command: /app/worker
+    environment:
+      - COORDINATOR_URL=http://10.0.0.1:3000
+    mem_limit: 128m
+    cpus: 0.25
+    restart: on-failure
+
+  worker-3:
+    build: .
+    command: /app/worker
+    environment:
+      - COORDINATOR_URL=http://10.0.0.1:3000
+    mem_limit: 128m
+    cpus: 0.25
+    restart: on-failure
+
+  worker-4:
+    build: .
+    command: /app/worker
+    environment:
+      - COORDINATOR_URL=http://10.0.0.1:3000
+    mem_limit: 128m
+    cpus: 0.25
+    restart: on-failure
