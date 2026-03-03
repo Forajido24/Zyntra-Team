@@ -1,10 +1,7 @@
 [workspace]
-members = [
-    "hub",
-    "shared",
-    "api_gateway",
-    "monitor",
-    "logger"
-]
-
 resolver = "2"
+
+members = [
+    "worker",
+    "shared"
+]
