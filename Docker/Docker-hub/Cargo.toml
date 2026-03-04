@@ -1,1 +1,10 @@
-Empezar a poner los archivos del hub
+[workspace]
+members = [
+    "hub",
+    "shared",
+    "api_gateway",
+    "monitor",
+    "logger"
+]
+
+resolver = "2"
