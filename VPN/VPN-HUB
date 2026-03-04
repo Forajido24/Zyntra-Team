@@ -21,11 +21,10 @@
 
 2- Crear directorio de configuración:
   -Directorio:
-    sudo mkdir -p /etc/wireguard
+    mkdir Wireguard
 
   -Entrar al directorio:
-    sudo -i
-    cd /etc/wireguard
+    cd Wireguard
 
 3- Generación de llaves:
   -Generamos las llaves dentro del directorio:
@@ -38,7 +37,7 @@
 
 4- Creación del archivo de configuración:
   -Crear archivo de configuración:
-    sudo nano /vpn/wireguard/wg0.conf
+    notepad server.conf
 
   -Configuración del Host:
     [Interface]
@@ -59,20 +58,13 @@
     PublicKey = (CLAVE_PUBLICA_WORKER3)
     AllowedIPs = 10.0.0.4/32
 
-  -Configuración del Worker:
-    [Interface]
-    PrivateKey = (CLAVE_PRIVADA_WORKER)
-    Address = 10.0.0.2/24
-    
-    [Peer]
-    PublicKey = (CLAVE_PUBLICA_HOST)
-    Endpoint = IP_PUBLICA_HOST:51820
-    AllowedIPs = 10.0.0.0/24
-    PersistentKeepalive = 25
 
 5- Levantar la VPN:
   -Activar VPN:
-    wg-quick up wg0
+    wireguard /installtunnelservice C:\WireGuard\server.conf
+
+  -Apagar VPN:
+     wireguard /uninstalltunnelservice server
 
   -Verificamos el estado:
     wg
