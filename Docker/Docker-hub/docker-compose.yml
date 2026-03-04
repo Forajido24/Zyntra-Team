@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  coordinator:
+    build: .
+    command: /app/hub
+    ports:
+      - "3000:3000"
+    # --- ESTO ES LO QUE DEBES AGREGAR ---
+    volumes:
+      - .:/output
+    # ------------------------------------
+    mem_limit: 256m
+    cpus: 0.5
+
+  api-gateway:
+    build: .
+    command: /app/api_gateway
+    ports:
+      - "3001:3001"
+    mem_limit: 128m
+    cpus: 0.25
+
+  monitor:
+    build: .
+    command: /app/monitor
+    ports:
+      - "3002:3002"
+    mem_limit: 128m
+    cpus: 0.25
+
+  logger:
+    build: .
+    command: /app/logger
+    mem_limit: 128m
+    cpus: 0.25
