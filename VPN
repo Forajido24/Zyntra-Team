@@ -45,7 +45,7 @@
     PrivateKey = (CLAVE_PRIVADA_HOST)
     Address = 10.0.0.1/24
     ListenPort = 51820
-    SaveConfig = true
+
     
     [Peer]
     PublicKey = (CLAVE_PUBLICA_WORKER1)
