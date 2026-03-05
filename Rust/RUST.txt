@@ -1,0 +1,203 @@
+1- Creamos el proyecto en Rust:
+  -Crear carpeta:
+    cargo new distributed_system
+    
+  -Ejemplo de como quedara la carpeta:
+    distributed_system/
+     ├── Cargo.toml
+     └── src/
+         └── main.rs
+  -Entra al proyecto:
+    cd distributed_system
+
+2- Agregar dependencias:
+  -Abre Cargo.tml y agrega lo siguiente:
+    [dependencies]
+    tokio = { version = "1", features = ["full"] }       #Permite concurrencia async
+    serde = { version = "1", features = ["derive"] }     #Convierte structs en JSON
+    serde_json = "1"                                     
+    axum = "0.7"                                         #Servidor HTTP
+    reqwest = { version = "0.11", features = ["json"] }  #Cliente HTTP
+
+  -Guarda el archivo:
+    cargo build
+
+3- Crear estructura de archivos:
+  -Entra a la carpeta src:
+    cd src
+
+  -Crea estos archivos:
+    touch coordinator.rs
+    touch worker.rs
+    touch messages.rs
+
+  -Ejemplo de estructura:
+    distributed_system/
+     ├── Cargo.toml
+     └── src/
+         ├── main.rs
+         ├── coordinator.rs
+         ├── worker.rs
+         └── messages.rs
+
+4- Definir mensajes:
+  -Abre messages.rs:
+    nano src/messages.rs
+
+  -Agrega lo siguiente:
+    // Importamos Serialize y Deserialize de serde
+    // Es necesario porque coordinador y worker se comunican por red en formato JSON.
+    use serde::{Serialize, Deserialize};
+    
+    // Esta estructura es una tarea que el coordinador enviará al worker.
+    #[derive(Serialize, Deserialize, Debug)]
+    pub struct Task {
+        // Identificador único de la tarea
+        pub id: u32,
+    
+        // Descripción o contenido de la tarea
+        // Por ahora será solo texto (dummy)
+        pub description: String,
+    }
+        
+    // Esta estructura es la respuesta que el worker enviará de regreso.
+    #[derive(Serialize, Deserialize, Debug)]
+    pub struct TaskResult {
+        // ID de la tarea que fue procesada
+        pub task_id: u32,
+    
+        // Resultado del procesamiento
+        pub result: String,
+    }
+
+5- Crear el worker:
+  -Abre worker.rs:
+    nano src/worker.rs
+
+  -Agrega lo siguiente:
+    // Importamos herramientas de axum para crear un servidor HTTP
+    use axum::{routing::post, Router, Json};
+    
+    // Importamos las estructuras que definimos en messages.rs
+    use crate::messages::{Task, TaskResult};
+    
+    // Esta función inicia el servidor del workers, async porque funciona de manera asíncrona.
+    pub async fn start_worker() {
+    
+        // Creamos un router (servidor HTTP)
+        // Definimos que cuando alguien haga POST a /task, se ejecutará la función handle_task.
+        let app = Router::new().route("/task", post(handle_task));
+    
+        println!("Worker running on 127.0.0.1:3001");
+    
+        // Iniciamos el servidor en la dirección 127.X.X.X puerto 3XXX
+        // Esto hace que el worker esté escuchando tareas.
+        axum::Server::bind(&"127.X.X.X:3XXX".parse().unwrap())
+            .serve(app.into_make_service())
+            .await
+            .unwrap();
+    }
+    
+    // Esta función se ejecuta cada vez que el coordinador envía una tarea.
+    // Recibe un JSON que automáticamente se convierte en un struct Task.
+    async fn handle_task(Json(task): Json<Task>) -> Json<TaskResult> {
+    
+        // Mostramos en consola que recibimos la tarea.
+        println!("Worker received task: {:?}", task);
+    
+        // Creamos una respuesta dummy.
+        let response = TaskResult {
+            task_id: task.id,
+            result: format!("Processed: {}", task.description),
+        };
+    
+        // Devolvemos el resultado en formato JSON.
+        Json(response)
+    }
+
+6- Crear el coordinador:
+  -Abre coordinator.rs:
+    nano src/coordinator.rs
+
+  -Agrega lo siguiente:
+    // Importamos las estructuras compartidas.
+    use crate::messages::{Task, TaskResult};
+    
+    // Importamos el cliente HTTP para enviar solicitudes.
+    use reqwest::Client;
+    
+    // Esta función envía una tarea dummy al worker.
+    pub async fn send_dummy_task() {
+    
+        // Creamos un cliente HTTP.
+        let client = Client::new();
+    
+        // Creamos una tarea de prueba.
+        let task = Task {
+            id: 1,
+            description: "Hello Distributed".to_string(),
+        };
+    
+        println!("Coordinator sending task...");
+    
+        // Enviamos la tarea al worker usando POST.
+        let response = client
+            .post("http://127.X.X.X:3XXX/task") // Dirección del worker
+            .json(&task)                       // Convertimos la tarea a JSON
+            .send()                            // Enviamos la solicitud
+            .await
+            .unwrap()
+            .json::<TaskResult>()              // Convertimos respuesta a TaskResult
+            .await
+            .unwrap();
+    
+        // Mostramos el resultado recibido.
+        println!("Coordinator received result: {:?}", response);
+    }
+
+7- Configurar el main
+  -Abre main.rs:
+    nano src/main.rs
+
+  -Agrega lo siguiente:
+    // Declaramos los módulos del proyecto.
+    mod coordinator;
+    mod worker;
+    mod messages;
+    
+    use std::env;
+    
+    // Tokio permite ejecutar funciones async.
+    #[tokio::main]
+    async fn main() {
+    
+        // Obtenemos los argumentos que se pasan al ejecutar el programa.
+        let args: Vec<String> = env::args().collect();
+    
+        // Si ejecutamos: cargo run -- worker
+        // Se iniciará el worker.
+        if args[1] == "worker" {
+            worker::start_worker().await;
+    
+        // Si ejecutamos: cargo run -- coordinator
+        // Se enviará la tarea dummy.
+        } else if args[1] == "coordinator" {
+            coordinator::send_dummy_task().await;
+        }
+    }
+
+8- Verificar el sistema:
+  -En una terminal ponemos lo siguiente:
+    cargo run -- worker
+
+  -Ejemplo de los que se vera:
+    Worker received task: Task { id: 1, description: "Hello Distributed" }
+
+  -En otra terminal ponemos lo siguiente:
+    cargo run -- coordinator
+
+  -Ejemplo de los que se vera:
+    Coordinator sending task...
+    Coordinator received result: TaskResult { task_id: 1, result: "Processed: Hello Distributed" }
+
+
