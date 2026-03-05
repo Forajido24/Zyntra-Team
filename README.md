@@ -1,112 +1,130 @@
-# Zyntra-Team
+# 🚀 Zyntra-Team: Infraestructura Distribuida para el Cálculo de Mandelbrot
 
-- Introducción:
-  El proyecto Zyntra-Team consiste en la creación de una infraestructura base distribuida utilizando entornos Linux mediante WSL2,interconectados
-  a través de una red privada virtual con WireGuard en topología hub-and-spoke. El objetivo principal es preparar un entorno técnico escalable
-  para la futura implementación de un algoritmo distribuido desarrollado en Rust.
+---
 
-- Componentes principales:
-  -Host: Nodo central que administra a los workers.
-  -Host (contenedores): -HUB (Se encarga de repartir tareas a los workers)
-                        -logger (Introducir descripción)
-                        -monitor (Introducir descripción)
-                        -shared (Introducir descripción)
-                        -target (Introducir descripción)
+## 📌 1. Descripción General del Proyecto
+Este proyecto consiste en una **infraestructura base distribuida** diseñada para la ejecución de algoritmos de **alto rendimiento en Rust**.
 
-  -Workers (Spokes): Nodos que se conectan al Hub. 
-  -VPN WireGuard: Comunicación segura entre nodos.
-  -Docker: 4 contenedores por nodo para garantizar escalabilidad.
-  -Rust: Implementación del algoritmo distribuido.
+El sistema utiliza una topología **Hub-and-Spoke** interconectada mediante una **red privada virtual (VPN)**, donde un nodo central coordina la asignación de tareas de renderizado del **conjunto de Mandelbrot** a múltiples nodos trabajadores (**workers**).
 
-- Requisitos de software:
-  *En Host físico:
-    -Windows 10/11.
-    -Windows Subsystem for Linux (WSL2).
-    -Virtualización habilitada en BIOS.
-    -PowerShell con permisos de administrador.
+---
 
-  *En el Hub:
-    -Wireguard en Windows.
-    -Distribución Linux (Ubuntu).
-    -Docker.
-    -Docker Compose.
-  
-  *En cada instancia Worker:
-    -Distribución Linux (Ubuntu).
-    -Wireguard.    
-    -Docker.
-    -Docker Compose.
-  
-  *Sistema de organización 
-    -Hub:
-        docker-workers(HUB)/
-        │
-        ├── Cargo.toml        (workspace raíz)
-        ├── Dockerfile
-        ├── docker-compose.yml
-        │
-        ├── hub/
-        │   ├── Cargo.toml
-        │   └── src/
-        │       └── main.rs
-        |
-        ├── shared/
-        │   ├── Cargo.toml
-        │   └── src/
-        │       └── lib.rs
-        │
-        ├── api_gateway/
-        │   ├── Cargo.toml
-        │   └── src/
-        │       └── main.rs
-        │
-        ├── monitor/
-        │   ├── Cargo.toml
-        │   └── src/
-        │       └── main.rs
-        │
-        └── logger/
-            ├── Cargo.toml
-            └── src/
-                └── main.rs
+## 🧰 2. Requisitos de Software
 
+### 🖥 Host Físico
+- Windows 10 / 11  
+- WSL2 habilitado  
+- Virtualización habilitada en BIOS  
 
+### 🖧 Nodos del sistema
+- **Sistema Operativo:** Ubuntu  
+- **Red:** WireGuard  
+- **Contenedores:** Docker y Docker Compose  
+- **Lenguaje:** Rust (Cargo)  
 
+---
 
+## 🔐 3. Instrucciones para levantar la VPN (WireGuard)
 
-  -Workers
-        docker-workers(HUB)/
-        │
-        ├── Cargo.toml        (workspace raíz)
-        ├── Dockerfile
-        ├── docker-compose.yml
-        │
-        ├── worker/
-        │   ├── Cargo.toml
-        │   └── src/
-        │       └── main.rs
-        |
-        ├── shared/
-            ├── Cargo.toml
-            └── src/
-                └── lib.rs
- 
+La comunicación entre el **Hub (10.0.0.1)** y los **Workers** se gestiona mediante **WireGuard**.
 
-    
-- Instrucciones para compilar y ejecutar el sistema distribuido en Rust:
+### Instalación
+```bash
+sudo apt install wireguard
+```
 
-  -Contruir la imagen del archivo compose:
-    docker-compose build
-  
-  -Levantar contenedores:
-    
-  docker-compose up -d
-  Primero levanatamos el Hub, para que se quede al pendiente de las peticiones de los workers.
-  Al levantar los 4 contenedores de los workers se iniciará el proceso de ejecución del algoritmo de Rust, pidiendo tareas al Hub.
-  
+### Generación de llaves
+Crear el par de llaves dentro de `/etc/wireguard`:
 
-- Notas importantes y supuestos.
+```bash
+wg genkey | tee privatekey | wg pubkey > publickey
+```
 
-  En las 3 computadoras que actuarán como workers, se usarán los mismos archivos, el unico que varea será el Hub, que tomará los datos recolectados por filas, y las reconstruirá en una imagen.
-  Al terminar las tareas, se les mandará un mensaje a los workers diciendo que ya no hay más tareas por ejecutar
-  
+### Configuración
+
+**Hub**
+- Configurar `server.conf`
+- Definir la interfaz
+- Registrar cada worker dentro de `[Peer]`
+
+**Worker**
+- Configurar `wg0.conf`
+- Apuntar al **Endpoint público del Hub**
+
+### Activación
+```bash
+wg-quick up wg0
+```
+
+> Nota: Las configuraciones en `/vpn` dentro del repositorio están **sanitizadas** y no incluyen llaves reales.
+
+---
+
+## 🐳 4. Instrucciones para desplegar contenedores
+
+El sistema utiliza **Docker** para aislar procesos y garantizar la **escalabilidad**.
+
+### Navegar al directorio
+```bash
+cd /docker
+```
+
+### Construir las imágenes
+```bash
+docker-compose build
+```
+
+### Levantar los contenedores
+```bash
+docker-compose up -d
+```
+
+---
+
+## ⚙️ 5. Compilación y Ejecución del Sistema en Rust
+
+El sistema se divide en un **coordinador (Hub)** y múltiples **ejecutores (Workers)**.
+
+### Compilación
+```bash
+cargo build --release
+```
+
+### Ejecución del Hub
+El coordinador:
+- Inicia un **servidor HTTP en el puerto 3000**
+- Gestiona la **cola de tareas**
+- Reconstruye la **imagen final**
+
+### Ejecución del Worker
+Los workers:
+1. Solicitan filas mediante **GET**
+2. Procesan el cálculo
+3. Devuelven resultados mediante **POST**
+
+---
+
+## 📎 6. Notas Importantes y Supuestos
+
+### Finalización
+Cuando se completan todas las filas, el **Hub envía `row 9999`** indicando que **no quedan más tareas**.
+
+### Salida
+La imagen final se genera como:
+
+```
+mandelbrot.png
+```
+
+en el volumen compartido:
+
+```
+/output
+```
+
+### Escalabilidad
+El entorno está configurado para levantar **4 contenedores worker por nodo físico** mediante **Docker Compose**.
+
+---
+
+⭐ Proyecto desarrollado por **Zyntra-Team**
