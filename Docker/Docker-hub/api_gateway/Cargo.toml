@@ -4,3 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Tokio para el runtime asíncrono
+tokio = { version = "1", features = ["full"] }
+
+# Axum para el servidor HTTP (añadimos features para respuestas completas)
+axum = { version = "0.6", features = ["macros"] }
+
+# Serde para la serialización de JSON
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Reqwest para reenviar las peticiones al Hub
+reqwest = { version = "0.11", features = ["json"] }
+
+# Tu librería de estructuras compartidas
+shared = { path = "../shared" }
