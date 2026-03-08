@@ -4,9 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Motor asíncrono para manejar las peticiones y el servidor
 tokio = { version = "1", features = ["full"] }
+
+# Framework web para los endpoints /task y /result
 axum = "0.6"
+
+# Serialización para enviar y recibir JSON
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# Procesamiento de la imagen final del fractal
 image = "0.24"
+
+# Cliente HTTP para enviar los logs al servicio 'logger'
+reqwest = { version = "0.11", features = ["json"] }
+
+# Tu librería compartida con las estructuras LogMessage, Task y TaskResult
 shared = { path = "../shared" }
