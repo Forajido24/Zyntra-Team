@@ -7,6 +7,7 @@ use shared::{Task, TaskResult};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU32, Ordering};
 use image::{ImageBuffer, Rgb};
+use serde::Serialize; // <-- Añadido para serializar el progreso
 
 struct AppState {
     next_row: AtomicU32,
@@ -14,6 +15,13 @@ struct AppState {
     total_rows: u32,
     width: u32,
     image_data: Mutex<Vec<Vec<u32>>>,
+}
+
+// <-- NUEVA ESTRUCTURA AGREGADA
+#[derive(Serialize)]
+struct Progress {
+    completed: u32,
+    total: u32,
 }
 
 #[tokio::main]
@@ -32,6 +40,7 @@ async fn main() {
     let app = Router::new()
         .route("/task", get(get_task))
         .route("/result", post(submit_result))
+        .route("/progress", get(get_progress)) // <-- NUEVA RUTA AGREGADA
         .with_state(state);
 
     println!("Coordinador iniciado en 0.0.0.0:3000");
@@ -105,4 +114,12 @@ async fn submit_result(
     }
 
     "OK"
+}
+
+// <-- NUEVA FUNCIÓN AGREGADA
+async fn get_progress(State(state): State<Arc<AppState>>) -> Json<Progress> {
+    Json(Progress {
+        completed: state.completed_rows.load(Ordering::SeqCst),
+        total: state.total_rows,
+    })
 }
