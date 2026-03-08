@@ -1,15 +1,24 @@
 version: '3.8'
 
 services:
+  # El servicio de logs debe ser el primero en estar disponible
+  logger:
+    build: .
+    command: /app/logger
+    ports:
+      - "4000:4000"  # Coincide con el puerto que definimos en el código del logger
+    mem_limit: 128m
+    cpus: 0.25
+
   coordinator:
     build: .
     command: /app/hub
     ports:
       - "3000:3000"
-    # --- ESTO ES LO QUE DEBES AGREGAR ---
     volumes:
-      - .:/output
-    # ------------------------------------
+      - .:/output  # Para guardar el archivo mandelbrot.png en tu máquina
+    depends_on:
+      - logger     # Asegura que el logger inicie antes que el hub
     mem_limit: 256m
     cpus: 0.5
 
@@ -17,7 +26,9 @@ services:
     build: .
     command: /app/api_gateway
     ports:
-      - "3001:3001"
+      - "3005:3005"
+    depends_on:
+      - logger
     mem_limit: 128m
     cpus: 0.25
 
@@ -26,11 +37,7 @@ services:
     command: /app/monitor
     ports:
       - "3002:3002"
-    mem_limit: 128m
-    cpus: 0.25
-
-  logger:
-    build: .
-    command: /app/logger
+    depends_on:
+      - logger
     mem_limit: 128m
     cpus: 0.25
