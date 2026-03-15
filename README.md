@@ -102,7 +102,7 @@ Ejecución del Hub y Gateway
 ## 📎 6. Notas Importantes y Supuestos
 
 **Falla por Memoria RAM (**Code 137**)**
-Si al generar imágenes de resoluciones gigantes (ej. 7680 filas) el contenedor falla al final con exited with code 137 (Out Of Memory), se debe aumentar la memoria en Windows creando el archivo %userprofile%\.wslconfig:
+- Si al generar imágenes de resoluciones gigantes (ej. 7680 filas) el contenedor falla al final con exited with code 137 (Out Of Memory), se debe aumentar la memoria en Windows creando el archivo %userprofile%\.wslconfig:
 
    - Ini, TOML
 [wsl2]
