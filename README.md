@@ -78,28 +78,28 @@ Levantar los contenedores
 Bash
 docker compose up -d
 ## ⚙️ 5. Compilación y Ejecución del Sistema en Rust
-El sistema se divide en un coordinador (Hub), un API Gateway, y múltiples ejecutores (Workers). Todo el código debe compilarse con la bandera de optimización para máxima velocidad.
+El sistema se divide en un coordinador (**Hub**), un API Gateway, y múltiples ejecutores (Workers). Todo el código debe compilarse con la bandera de optimización para máxima velocidad.
 
    - Compilación (CRÍTICO)
 Bash
 cargo build --release
 Ejecución del Hub y Gateway
-El coordinador:
+   - El coordinador:
 
 Inicia un servidor HTTP en el puerto 3005
 
-Gestiona la cola de tareas con un timeout extendido para evitar "Lost Tasks"
+   - Gestiona la cola de tareas con un timeout extendido para evitar "Lost Tasks"
 
-Reconstruye la imagen final
+   - Reconstruye la imagen final
 
 Ejecución del Worker
 Los workers:
 
-Solicitan filas mediante GET
+   - Solicitan filas mediante GET
 
-Procesan el cálculo e inician un cronómetro interno (Instant::now())
+   - Procesan el cálculo e inician un cronómetro interno (Instant::now())
 
-Devuelven resultados y su latencia mediante POST
+   - Devuelven resultados y su latencia mediante POST
 
 ## 📎 6. Notas Importantes y Supuestos
 Falla por Memoria RAM (**Code 137**)
