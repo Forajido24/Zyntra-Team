@@ -57,7 +57,9 @@ Bash
 sudo wg-quick up wg0
 Nota: Las configuraciones en /vpn dentro del repositorio están sanitizadas y no incluyen llaves reales.
 
-##🐳 4. Instrucciones para desplegar contenedores
+---
+
+## 🐳 4. Instrucciones para desplegar contenedores
 El sistema utiliza Docker para aislar procesos y garantizar la escalabilidad. Se recomienda usar la versión moderna de Docker Compose (sin guion) para evitar errores de compatibilidad (KeyError: ContainerConfig).
 
 Navegar al directorio
@@ -75,7 +77,7 @@ docker compose build --no-cache
 Levantar los contenedores
 Bash
 docker compose up -d
-##⚙️ 5. Compilación y Ejecución del Sistema en Rust
+## ⚙️ 5. Compilación y Ejecución del Sistema en Rust
 El sistema se divide en un coordinador (Hub), un API Gateway, y múltiples ejecutores (Workers). Todo el código debe compilarse con la bandera de optimización para máxima velocidad.
 
 Compilación (CRÍTICO)
@@ -99,7 +101,7 @@ Procesan el cálculo e inician un cronómetro interno (Instant::now())
 
 Devuelven resultados y su latencia mediante POST
 
-##📎 6. Notas Importantes y Supuestos
+## 📎 6. Notas Importantes y Supuestos
 Falla por Memoria RAM (Code 137)
 Si al generar imágenes de resoluciones gigantes (ej. 7680 filas) el contenedor falla al final con exited with code 137 (Out Of Memory), se debe aumentar la memoria en Windows creando el archivo %userprofile%\.wslconfig:
 
