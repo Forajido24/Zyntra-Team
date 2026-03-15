@@ -112,11 +112,12 @@ Y reiniciar con wsl --shutdown.
 **Problemas con Wireguard y WSL:**
 Se decidió usar en el Hub, wireguard en windows y Docker en WSL, por temas de compatabilidad, ya que no nos permitia usar Wireuard en WSL, solo en el Hub, ya que en los workers no hubo ningun prblema en usar esta configuración.
 
-**CGNAT**
+**CGNAT:**
 Si estas intenado usar este proyecto para trabajarlo de manera remota con otras computadoras, ten en consideración revisar que no tengas CGNAT, ya que este no deja una IP publica para que puedas colocarlo como endpoint en tus workers,
 en cambio si lo usas en una red local no tendrás problemas.
 
-**Habilitar el puerto que se usará en wireguard y  del apigetway del hub en windows**
+**Habilitar el puerto que se usará en wireguard y  del apigetway del hub en windows:**
+
 Recuerda que como se usará la interconexion en Windows, aunque los contenedores esten en wsl, debes de habilitar los puertos 51820 y el 3005 en Windows, ya que de lo contrario, windows dejará en el limbo cualquier petición hacía el Hub.
 
 **Finalización**
