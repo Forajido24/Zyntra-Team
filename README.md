@@ -85,8 +85,7 @@ Bash
 cargo build --release
 Ejecución del Hub y Gateway
    - El coordinador:
-
-      - Inicia un servidor HTTP en el puerto 3005
+     Inicia un servidor HTTP en el puerto 3005
 
    - Gestiona la cola de tareas con un timeout extendido para evitar "Lost Tasks"
 
