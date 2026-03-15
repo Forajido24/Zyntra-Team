@@ -18,7 +18,7 @@ Además, el sistema ahora incluye **telemetría avanzada**, midiendo la **latenc
 - Windows 10 / 11 (Gestiona nativamente la VPN y el Firewall)
 - WSL2 habilitado (Ejecuta los contenedores Docker)
 - Virtualización habilitada en BIOS
-- **Archivo `.wslconfig`** configurado con al menos 8GB de RAM para resoluciones 4K/8K.
+- **Archivo `.wslconfig`** configurado con al menos 8GB de RAM solo si quieres imagenes en resoluciones de 8K.
 
 ### 🖧 Nodos del sistema (Workers)
 - **Sistema Operativo:** Ubuntu (Máquinas Virtuales)
@@ -102,7 +102,7 @@ Procesan el cálculo e inician un cronómetro interno (Instant::now())
 Devuelven resultados y su latencia mediante POST
 
 ## 📎 6. Notas Importantes y Supuestos
-Falla por Memoria RAM (Code 137)
+Falla por Memoria RAM (**Code 137**)
 Si al generar imágenes de resoluciones gigantes (ej. 7680 filas) el contenedor falla al final con exited with code 137 (Out Of Memory), se debe aumentar la memoria en Windows creando el archivo %userprofile%\.wslconfig:
 
 Ini, TOML
@@ -110,17 +110,19 @@ Ini, TOML
 memory=8GB
 Y reiniciar con wsl --shutdown.
 
-Finalización
+**Finalización**
 Cuando se completan todas las filas, el Hub envía row 9999 indicando que no quedan más tareas.
 
-Salida
+**Salida**
 La imagen final se genera como:
 
 mandelbrot.png
 en el volumen compartido:
 
 /output
-Escalabilidad
+**Escalabilidad**
 El entorno está configurado para levantar 4 contenedores worker por nodo físico mediante Docker Compose.
 
-⭐ Proyecto desarrollado por Zyntra-Team
+---
+
+⭐ **Proyecto desarrollado por Zyntra-Team**
