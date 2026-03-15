@@ -26,6 +26,7 @@ struct Progress {
 
 #[tokio::main]
 async fn main() {
+    //4K, si quieres en 8k, y usas wsl, debes de configurarlo para que tenga 8gb
     let width = 3840;
     let height = 2160;
 
@@ -34,6 +35,8 @@ async fn main() {
         completed_rows: AtomicU32::new(0),
         total_rows: height,
         width,
+        //Aqui se crea el lienzo en blanco en la memoria RAM
+        
         image_data: Mutex::new(vec![vec![0; width as usize]; height as usize]),
     });
 
@@ -98,6 +101,9 @@ async fn submit_result(
         for (y, row_data) in img_data.iter().enumerate() {
             for (x, &iter) in row_data.iter().enumerate() {
 
+                //El max_iter, debe de coincidir con la variable iter
+                //sino, no se pintarán bien los fractales, ocasionando que
+                //se pinten en un azul claro y no en negro.
                 let pixel_color = if iter == 1000 {
                     Rgb([0, 0, 0])
                 } else {
