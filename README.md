@@ -105,7 +105,7 @@ Devuelven resultados y su latencia mediante POST
 Falla por Memoria RAM (**Code 137**)
 Si al generar imágenes de resoluciones gigantes (ej. 7680 filas) el contenedor falla al final con exited with code 137 (Out Of Memory), se debe aumentar la memoria en Windows creando el archivo %userprofile%\.wslconfig:
 
-Ini, TOML
+   - Ini, TOML
 [wsl2]
 memory=8GB
 Y reiniciar con wsl --shutdown.
@@ -116,7 +116,7 @@ Cuando se completan todas las filas, el Hub envía row 9999 indicando que no que
 **Salida**
 La imagen final se genera como:
 
-mandelbrot.png
+   - mandelbrot.png
 en el volumen compartido:
 
 /output
