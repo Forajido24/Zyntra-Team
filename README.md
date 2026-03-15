@@ -80,13 +80,13 @@ docker compose up -d
 ## ⚙️ 5. Compilación y Ejecución del Sistema en Rust
 El sistema se divide en un coordinador (Hub), un API Gateway, y múltiples ejecutores (Workers). Todo el código debe compilarse con la bandera de optimización para máxima velocidad.
 
-Compilación (CRÍTICO)
+   - Compilación (CRÍTICO)
 Bash
 cargo build --release
 Ejecución del Hub y Gateway
 El coordinador:
 
-Inicia un servidor HTTP en el puerto 3000
+Inicia un servidor HTTP en el puerto 3005
 
 Gestiona la cola de tareas con un timeout extendido para evitar "Lost Tasks"
 
