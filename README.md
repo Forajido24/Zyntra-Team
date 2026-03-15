@@ -110,10 +110,10 @@ memory=8GB
 Y reiniciar con wsl --shutdown.
 
 **Problemas con Wireguard y WSL:**
-   - Se decidió usar en el Hub, wireguard en windows y Docker en WSL, por temas de compatabilidad, ya que no nos permitia usar Wireuard en WSL, solo en el Hub, ya que en los workers no hubo ningun prblema en usar esta configuración.
+   - Se decidió usar en el Hub, wireguard en windows y Docker en WSL, por temas de compatibilidad, ya que no nos permitia usar Wireuard en WSL, solo en el Hub, ya que en los workers no hubo ningun prblema en usar esta configuración.
 
 **CGNAT**
-   - Si estas intenado usar este proyecto para trabajarlo de manera remota con otras computadoras, ten en consideración revisar que no tengas CGNAT, ya que este no deja una IP publica para que puedas colocarlo como endpoint en tus workers,
+   - Si estas intentando usar este proyecto para trabajarlo de manera remota con otras computadoras, toma en consideración revisar que no tengas CGNAT, ya que este no deja una IP publica para que puedas colocarlo como endpoint en tus workers,
 en cambio si lo usas en una red local no tendrás problemas.
 
 **Habilitar el puerto que se usará en wireguard y  del apigetway del hub en windows**
