@@ -120,10 +120,10 @@ en cambio si lo usas en una red local no tendrás problemas.
    - Recuerda que como se usará la interconexion en Windows, aunque los contenedores esten en wsl, debes de habilitar los puertos 51820 y el 3005 en Windows, ya que de lo contrario, windows dejará en el limbo cualquier petición hacía el Hub.
 
 **Finalización**
-Cuando se completan todas las filas, el Hub envía row 9999 indicando que no quedan más tareas.
+- Cuando se completan todas las filas, el Hub envía row 9999 indicando que no quedan más tareas.
 
 **Salida**
-La imagen final se genera como:
+- La imagen final se genera como:
 
    - mandelbrot.png
 en el volumen compartido:
