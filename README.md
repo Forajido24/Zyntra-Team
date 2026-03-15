@@ -1,130 +1,105 @@
-# 🚀 Zyntra-Team: Infraestructura Distribuida para el Cálculo de Mandelbrot
+🚀 Zyntra-Team: Infraestructura Distribuida para el Cálculo de Mandelbrot
+📌 1. Descripción General del Proyecto
+Este proyecto consiste en una infraestructura base distribuida diseñada para la ejecución de algoritmos de alto rendimiento en Rust.
 
----
+El sistema utiliza una topología Hub-and-Spoke interconectada mediante una red privada virtual (VPN) con WireGuard. Un nodo central (Hub) coordina la asignación de tareas de renderizado del conjunto de Mandelbrot a múltiples nodos trabajadores (workers) distribuidos, recopilando métricas de latencia y rendimiento en tiempo real.
 
-## 📌 1. Descripción General del Proyecto
-Este proyecto consiste en una **infraestructura base distribuida** diseñada para la ejecución de algoritmos de **alto rendimiento en Rust**.
+🧰 2. Arquitectura y Requisitos de Software
+Debido a las particularidades del enrutamiento de red, el sistema se divide estratégicamente entre el Host Físico (Windows) y su subsistema Linux (WSL2) para el Hub, mientras que los Workers operan en entornos Linux puros.
 
-El sistema utiliza una topología **Hub-and-Spoke** interconectada mediante una **red privada virtual (VPN)**, donde un nodo central coordina la asignación de tareas de renderizado del **conjunto de Mandelbrot** a múltiples nodos trabajadores (**workers**).
+🖥 Hub (Host Central)
+Sistema Operativo Base: Windows 10 / 11 (Maneja el túnel de WireGuard y el Firewall).
 
----
+Entorno de Ejecución: WSL2 (Ubuntu) habilitado con Docker Desktop.
 
-## 🧰 2. Requisitos de Software
+Memoria RAM: Configuración en .wslconfig recomendada de 8GB+ para renderizados 4K/8K.
 
-### 🖥 Host Físico
-- Windows 10 / 11  
-- WSL2 habilitado  
-- Virtualización habilitada en BIOS  
+🖧 Nodos Trabajadores (Workers)
+Sistema Operativo: Ubuntu (Máquinas Virtuales o Físicas).
 
-### 🖧 Nodos del sistema
-- **Sistema Operativo:** Ubuntu  
-- **Red:** WireGuard  
-- **Contenedores:** Docker y Docker Compose  
-- **Lenguaje:** Rust (Cargo)  
+Red: Cliente WireGuard (CLI).
 
----
+Contenedores: Docker y Docker Compose V2 (docker compose).
 
-## 🔐 3. Instrucciones para levantar la VPN (WireGuard)
+Lenguaje Base: Rust (Cargo).
 
-La comunicación entre el **Hub (10.0.0.1)** y los **Workers** se gestiona mediante **WireGuard**.
+🔐 3. Configuración de la VPN (WireGuard) y Red
+La comunicación entre el Hub (10.0.0.1) y los Workers (10.0.0.x) requiere configuraciones específicas para sortear los bloqueos de red entre Windows, WSL2 y Docker.
 
-### Instalación
-```bash
-sudo apt install wireguard
-```
+Hub (Configuración en Windows vía PowerShell)
+A diferencia de configuraciones tradicionales, la gestión del túnel en el host central se realiza nativamente desde PowerShell para mayor control y automatización:
 
-### Generación de llaves
-Crear el par de llaves dentro de `/etc/wireguard`:
+Gestión del Túnel: Se utiliza la CLI de WireGuard desde PowerShell para administrar la interfaz. El archivo de configuración (wg0.conf) se define asignando la IP 10.0.0.1 al servidor y registrando las llaves públicas de los Workers en la sección [Peer].
 
-```bash
-wg genkey | tee privatekey | wg pubkey > publickey
-```
+Activación: El túnel se levanta directamente ejecutando los comandos de WireGuard en la terminal de PowerShell como administrador.
 
-### Configuración
+Regla de Firewall (CRÍTICO): Para evitar que Windows Defender bloquee las peticiones entrantes desde la VPN antes de que lleguen a los contenedores de Docker en WSL2, se debe ejecutar el siguiente comando en PowerShell (como Administrador):
 
-**Hub**
-- Configurar `server.conf`
-- Definir la interfaz
-- Registrar cada worker dentro de `[Peer]`
+PowerShell
+New-NetFirewallRule -DisplayName "Permitir API Gateway Mandelbrot" -Direction Inbound -LocalPort 3005 -Protocol TCP -Action Allow
+Workers (Configuración en Ubuntu)
+Instalación: sudo apt install wireguard
 
-**Worker**
-- Configurar `wg0.conf`
-- Apuntar al **Endpoint público del Hub**
+Generación de llaves: wg genkey | tee privatekey | wg pubkey > publickey
 
-### Activación
-```bash
-wg-quick up wg0
-```
+Configuración: Modificar /etc/wireguard/wg0.conf apuntando al endpoint público del Hub.
 
-> Nota: Las configuraciones en `/vpn` dentro del repositorio están **sanitizadas** y no incluyen llaves reales.
+Activación: sudo wg-quick up wg0
 
----
+Nota: Las configuraciones en /vpn dentro del repositorio están sanitizadas y no incluyen llaves reales.
 
-## 🐳 4. Instrucciones para desplegar contenedores
+⚙️ 4. Lógica del Sistema y Nuevas Funcionalidades
+El sistema desarrollado en Rust incorpora características avanzadas de telemetría y tolerancia a fallos:
 
-El sistema utiliza **Docker** para aislar procesos y garantizar la **escalabilidad**.
+API Gateway y Control de Tiempos (Timeouts): Las peticiones de los workers pasan por un Gateway configurado con un tiempo de espera amplio (ej. 30-120 segundos) para evitar descartar tareas pesadas (Lost Tasks) durante el cálculo de áreas densas del fractal.
 
-### Navegar al directorio
-```bash
-cd /docker
-```
+Identificación de Nodos: Cada worker envía su identidad real basada en variables de entorno (WORKER_NAME), permitiendo al Hub saber exactamente qué máquina virtual completó cada fila.
 
-### Construir las imágenes
-```bash
-docker-compose build
-```
+Métricas de Latencia: Los workers miden el tiempo exacto (en milisegundos) que toma renderizar una fila usando std::time::Instant y lo adjuntan en su carga útil (TaskResult), lo que permite monitorear el rendimiento distribuido en tiempo real.
 
-### Levantar los contenedores
-```bash
-docker-compose up -d
-```
+Modo Release: Todo el ecosistema compila utilizando --release para aprovechar las optimizaciones matemáticas de Rust, reduciendo los tiempos de cálculo en un 99%.
 
----
+🐳 5. Instrucciones para desplegar contenedores
+El sistema utiliza Docker Compose para orquestar los microservicios (API Gateway, Coordinator, Logger) y escalar los workers.
 
-## ⚙️ 5. Compilación y Ejecución del Sistema en Rust
+Despliegue del Hub (En WSL2)
+Navegar al directorio del Hub y ejecutar:
 
-El sistema se divide en un **coordinador (Hub)** y múltiples **ejecutores (Workers)**.
+Bash
+docker compose build --no-cache
+docker compose up -d
+Nota: Se recomienda usar la versión moderna docker compose (sin guion) para evitar el error obsoleto KeyError: 'ContainerConfig' de versiones antiguas.
 
-### Compilación
-```bash
-cargo build --release
-```
+Despliegue de los Workers (En Ubuntu VMs)
+En el archivo docker-compose.yml de los workers, definir la variable de identificación y levantar los contenedores:
 
-### Ejecución del Hub
-El coordinador:
-- Inicia un **servidor HTTP en el puerto 3000**
-- Gestiona la **cola de tareas**
-- Reconstruye la **imagen final**
+YAML
+environment:
+  - COORDINATOR_URL=http://10.0.0.1:3005
+  - WORKER_NAME=Nodo-Ubuntu-01
+Luego ejecutar:
 
-### Ejecución del Worker
-Los workers:
-1. Solicitan filas mediante **GET**
-2. Procesan el cálculo
-3. Devuelven resultados mediante **POST**
+Bash
+sudo docker compose build --no-cache
+sudo docker compose up -d
+(El sistema está diseñado para levantar 4 contenedores worker por nodo físico).
 
----
+📎 6. Notas Importantes y Solución de Problemas
+Renderizado y Código 137 (Out Of Memory)
+Al generar resoluciones masivas (ej. 8K / 7680 filas), el Coordinador ensambla millones de píxeles en memoria RAM antes de guardar. Si el contenedor crashea con el Código 137 al final del proceso:
 
-## 📎 6. Notas Importantes y Supuestos
+Crear/modificar el archivo %userprofile%\.wslconfig en Windows.
 
-### Finalización
-Cuando se completan todas las filas, el **Hub envía `row 9999`** indicando que **no quedan más tareas**.
+Aumentar la memoria asignada a WSL2:
 
-### Salida
-La imagen final se genera como:
+Ini, TOML
+[wsl2]
+memory=8GB
+Reiniciar WSL con wsl --shutdown en PowerShell.
 
-```
-mandelbrot.png
-```
+Finalización y Salida
+Cuando se completan todas las filas, el Hub devuelve la tarea row: 9999, lo que indica a los workers que entren en estado de reposo.
 
-en el volumen compartido:
+La imagen resultante se exporta automáticamente en el volumen compartido /output como mandelbrot.png.
 
-```
-/output
-```
-
-### Escalabilidad
-El entorno está configurado para levantar **4 contenedores worker por nodo físico** mediante **Docker Compose**.
-
----
-
-⭐ Proyecto desarrollado por **Zyntra-Team**
+⭐ Proyecto desarrollado por Zyntra-Team
