@@ -1,14 +1,15 @@
 use shared::{Task, TaskResult};
 use std::env;
+use std::time::Instant;
 use tokio::time::{sleep, Duration};
 
 fn calcular_fila(task: &Task) -> Vec<u32> {
     let mut fila_pixels = Vec::with_capacity(task.width as usize);
-   //Aqui se hacen los cambios para poder cambiar la geometría mostrada
+
     let x_min = -2.0;
     let x_max = 1.0;
-    let y_min = -1.5;
-    let y_max = 1.5;
+    let y_min = -1.2;
+    let y_max = 1.2;
 
     let y_coord = y_min + (task.row as f64 / task.height as f64) * (y_max - y_min);
 
@@ -35,9 +36,10 @@ fn calcular_fila(task: &Task) -> Vec<u32> {
 #[tokio::main]
 async fn main() {
     let coordinator_url =
-        env::var("COORDINATOR_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+        env::var("COORDINATOR_URL").unwrap_or_else(|_| "http://localhost:3005".to_string());
 
-    let worker_id = format!("Worker-{}", std::process::id());
+    let worker_id = env::var("WORKER_NAME")
+        .unwrap_or_else(|_| format!("Worker-Desconocido-{}", std::process::id()));
 
     let client = reqwest::Client::new();
 
@@ -57,14 +59,19 @@ async fn main() {
                 }
 
                 println!("{}: Calculando fila {}...", worker_id, task.row);
+                let inicio = Instant::now();
+
 
                 let pixels = calcular_fila(&task);
+
+                let latencia = inicio.elapsed().as_millis() as u64;
 
                 let result = TaskResult {
                     task_id: task.task_id,
                     worker_id: worker_id.clone(),
                     row: task.row,
                     data: pixels,
+                    latency_ms: latencia,
                 };
 
                 let _ = client
