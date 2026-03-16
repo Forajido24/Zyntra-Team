@@ -3,7 +3,7 @@ use axum::{
     Json, Router,
     extract::State,
 };
-use shared::{Task, TaskResult};
+*use shared::{Task, TaskResult};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU32, Ordering};
 use image::{ImageBuffer, Rgb};
@@ -44,7 +44,7 @@ async fn main() {
         .with_state(state);
 
     println!("Coordinador iniciado en 0.0.0.0:3000");
-    
+
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
         .await
@@ -83,11 +83,13 @@ async fn submit_result(
 
     let completadas = state.completed_rows.fetch_add(1, Ordering::SeqCst) + 1;
 
+        // Modificamos el mensaje para incluir la latencia
     println!(
-        "Recibida fila {} de {} (por: {})",
+        "Recibida fila {} de {} (por: {} | Latencia: {} ms)",
         payload.row,
         state.total_rows,
-        payload.worker_id
+        payload.worker_id,
+        payload.latency_ms // <--- IMPRIMIMOS LA LATENCIA AQUÍ
     );
 
     if completadas == state.total_rows {
@@ -98,7 +100,7 @@ async fn submit_result(
         for (y, row_data) in img_data.iter().enumerate() {
             for (x, &iter) in row_data.iter().enumerate() {
 
-                let pixel_color = if iter == 1000 {
+                let pixel_color = if iter == 5000 {
                     Rgb([0, 0, 0])
                 } else {
                     let color = (iter % 256) as u8;
@@ -123,3 +125,4 @@ async fn get_progress(State(state): State<Arc<AppState>>) -> Json<Progress> {
         total: state.total_rows,
     })
 }
+
